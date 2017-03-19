@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Gif Tastic</title>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <!-- initial buttons -->
+    <div id="superheroBtns"> 
+        <button class="superhero" data-name="Batman">Batman</button>
+        <button class="superhero" data-name="Superman">Superman</button>
+        <button class="superhero" data-name="Iron Man">Iron Man</button>
+        <button class="superhero" data-name="Wonder Woman">Wonder Woman</button>
+        <button class="superhero" data-name="Captain America">Captain America</button>
+        <button class="superhero" data-name="Thor">Thor</button>
+        <button class="superhero" data-name="Deadpool">Deadpool</button>
+        <button class="superhero" data-name="Spiderman">Spiderman</button>
+        <button class="superhero" data-name="Black Widow">Black Widow</button>
+        <button class="superhero" data-name="Flash">Flash</button>
+        <button class="superhero" data-name="Hulk">Hulk</button>
+        <button class="superhero" data-name="Aquaman">Aquaman</button>
+    </div>
+
+    <!-- Form for adding new superhero btns/gifs -->
+    <div style="float:right; margin-top:50px;">
+     <h4>Add Your Favorite Superheros!</h4>
+        <form id="giphyForm">
+            <label for="giphyInput"></label>
+            <input type="text" value="" id="giphyInput"><br><br>
+            <input type="submit" id="newBtn" style="margin-left:8px">
+        </form>
+    </div>
+
+    <div id="gifs" style="float:left"></div> <!-- tried removing this but then the whole thing breaks... don't see why it needs to stay? -->
+
+    <!-- adding jquery -->
+    <script src='https://code.jquery.com/jquery-2.1.3.min.js'></script>
+
+    <script>
+        // ensure the document is ready before running code
+        $(document).ready(function(){
+
+            // when a button is clicked add the gifs...
+            $('button').on('click', function() {
+                var superhero = $(this).data('name');
+                var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + superhero + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+                // ajax get request
+                $.ajax({
+                    url: queryURL,
+                    method: 'GET'
+                }).done(function(response) {
+                        console.log(response)
+
+                        var results = response.data;
+
+                        // adding a for loop for adding a div for the new superhero & adding the connected rating in text
+                        for (var i = 0; i < results.length; i++) {
+                            var superheroDiv = $('<div/>');
+                            var p = $('<p/>');
+                            p.text(results[i].rating);
+                            var superheroImage = $('<img/>');
+
+                            // adding classes/attributes for ensuring that when clicked (next function) the gifs will know to start/stop
+                            superheroImage.addClass('imageClick')
+                            superheroImage.attr('src', results[i].images.fixed_height.url);
+                            superheroImage.attr('data-still', results[i].images.fixed_height_still.url)
+                            superheroImage.attr('data-animate', results[i].images.fixed_height.url)
+
+                            .attr('data-state', 'still');
+
+                            // appending the text/gif info to the page properly
+                            superheroDiv.append(p);
+                            superheroDiv.append(superheroImage);
+                            superheroDiv.prependTo($('#gifs'));
+                        }
+
+                        // when clicked the gifs switch between still and animate
+                        $('.imageClick').on('click', function() {
+                    
+                            var state = $(this).attr('data-state'); 
+                            console.log(this);
+
+                            if (state == 'still') {
+                                $(this).attr('src', $(this).data('animate'));
+                                $(this).attr('data-state', 'animate');
+                            } else {
+                                $(this).attr('src', $(this).data('still'));
+                                $(this).attr('data-state', 'still');
+                            }      //maybe this can be simplified, still kind of confuses me
+                        });
+                    });
+                });
+
+            var superheros = ['']; //repeating logic above for the newly added superhero gifs/btns
+
+                $('#newBtn').on('click', function(){
+                    var superheroNewBtn = $("#giphyInput").val().trim();
+                    var newButton = $("<button/>").addClass( "superhero").attr('data-name',superheroNewBtn).html(superheroNewBtn);
+                    
+                    $("#superheroBtns").append(newButton);
+                        console.log("Work");
+
+                    queryURL = "https://api.giphy.com/v1/gifs/search?q=" + superheroNewBtn + "&api_key=dc6zaTOxFJmzC&limit=10";
+                        console.log(superheroNewBtn);
+
+                    $.ajax({
+                    url: queryURL,
+                    method: 'GET'
+                    }).done(function(response) {
+
+                    var results = response.data;
+
+                        for (var i = 0; i < results.length; i++) {
+                            var superheroDiv = $('<div/>');
+                            var p =$('<p/>');
+                            p.text(results[i].rating);
+                            var superheroImage = $('<img/>');
+
+                            superheroImage.addClass('imageClick')
+
+                            superheroImage.attr('src', results[i].images.fixed_height_still.url);
+                            superheroImage.attr('data-still', results[i].images.fixed_height_still.url)
+                            superheroImage.attr('data-animate', results[i].images.fixed_height.url)
+
+                            .attr('data-state', 'still');
+
+                            superheroDiv.append(p);
+                            superheroDiv.append(superheroImage);
+                            superheroDiv.prependTo($('#gifs'));
+                        }
+
+                        //same as for existing gifs; this adds stop/start functionality to the new gifs users add
+                        $('.imageClick').on('click', function() {
+                            var state = $(this).attr('data-state'); 
+                            console.log(this);
+
+                            if (state == 'still') {
+                                $(this).attr('src', $(this).data('animate'));
+                                $(this).attr('data-state', 'animate');
+                            } else {
+                                $(this).attr('src', $(this).data('still'));
+                                $(this).attr('data-state', 'still');
+                            }      
+                        });
+                    });
+
+                    $("#giphyInput").val("");
+                    return false;
+                })
+        });
+    </script>
+
+</body>
+</html>
